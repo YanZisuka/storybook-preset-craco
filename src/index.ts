@@ -1,28 +1,21 @@
-const {
-  createWebpackDevConfig,
-  createWebpackProdConfig,
-} = require("@craco/craco");
+import { createWebpackDevConfig, createWebpackProdConfig } from "@craco/craco";
+import { logger } from "@storybook/node-logger";
+import { resolve, relative, dirname, join } from "path";
+import type { Configuration } from "webpack";
 
-const { logger } = require("@storybook/node-logger");
-
-const { resolve, relative, dirname, join } = require("path");
-
-const {
-  mergePlugins,
-} = require("@storybook/preset-create-react-app/dist/helpers/mergePlugins");
-const {
-  processCraConfig,
-} = require("@storybook/preset-create-react-app/dist/helpers/processCraConfig");
-const {
-  getModulePath,
-} = require("@storybook/preset-create-react-app/dist/helpers/getModulePath");
+import { processCraConfig } from "./utils/processCraConfig";
+import { mergePlugins } from "./utils/mergePlugins";
+import { getModulePath } from "./utils/getModulePath";
+import { PluginOptions } from "./types/PluginOptions";
 
 const CWD = process.cwd();
 
-const babelDefault = () => ({
-  presets: [],
-  plugins: [],
-});
+function babelDefault() {
+  return {
+    presets: [],
+    plugins: [],
+  };
+}
 
 const incompatiblePresets = [
   "@storybook/preset-scss",
@@ -30,7 +23,7 @@ const incompatiblePresets = [
   "@storybook/preset-create-react-app",
 ];
 
-const checkPresets = (options) => {
+function checkPresets(options: PluginOptions) {
   let presetsList = options.presetsList || [];
 
   presetsList.forEach((preset) => {
@@ -41,9 +34,9 @@ const checkPresets = (options) => {
       );
     }
   });
-};
+}
 
-const webpack = (webpackConfig = {}, options) => {
+function webpack(webpackConfig: Configuration = {}, options: PluginOptions) {
   const createWebpackConfig =
     webpackConfig.mode === "production"
       ? createWebpackProdConfig
@@ -78,11 +71,13 @@ const webpack = (webpackConfig = {}, options) => {
   logger.info(`=> Removing existing JavaScript and TypeScript rules.`);
   const filteredRules =
     webpackConfig.module &&
-    webpackConfig.module.rules.filter(
-      ({ test }) =>
+    webpackConfig.module.rules?.filter(
+      (rule) =>
         !(
-          test instanceof RegExp &&
-          ((test && test.test(".js")) || test.test(".ts"))
+          rule &&
+          rule !== "..." &&
+          rule.test instanceof RegExp &&
+          ((rule.test && rule.test.test(".js")) || rule.test.test(".ts"))
         )
     );
 
@@ -93,8 +88,8 @@ const webpack = (webpackConfig = {}, options) => {
 
   // CRA uses the `ModuleScopePlugin` to limit support to the `src` directory.
   // Here, we select the plugin and modify its configuration to include Storybook config directory.
-  const plugins = cracoWebpackConfig.resolve.plugins.map((plugin) => {
-    if (plugin.appSrcs) {
+  const plugins = cracoWebpackConfig.resolve?.plugins?.map((plugin) => {
+    if (plugin && plugin !== "..." && plugin.appSrcs) {
       // Mutate the plugin directly as opposed to recreating it.
       // eslint-disable-next-line no-param-reassign
       plugin.appSrcs = [...plugin.appSrcs, resolve(options.configDir)];
@@ -111,15 +106,22 @@ const webpack = (webpackConfig = {}, options) => {
     },
     plugins: mergePlugins(
       ...(webpackConfig.plugins || []),
-      ...cracoWebpackConfig.plugins
+      ...(Array.isArray(cracoWebpackConfig.plugins)
+        ? cracoWebpackConfig.plugins
+        : [])
     ),
     resolve: {
       ...webpackConfig.resolve,
-      alias: {...webpackConfig.resolve.alias, ...cracoWebpackConfig.resolve.alias},
-      extensions: cracoWebpackConfig.resolve.extensions,
+      alias: {
+        ...webpackConfig.resolve?.alias,
+        ...cracoWebpackConfig.resolve?.alias,
+      },
+      extensions: cracoWebpackConfig.resolve?.extensions,
       modules: [
         ...((webpackConfig.resolve && webpackConfig.resolve.modules) || []),
-        ...((cracoWebpackConfig.resolve && cracoWebpackConfig.resolve.modules) || []),
+        ...((cracoWebpackConfig.resolve &&
+          cracoWebpackConfig.resolve.modules) ||
+          []),
         join(scriptsPath, "node_modules"),
         ...getModulePath(CWD),
       ],
@@ -127,15 +129,20 @@ const webpack = (webpackConfig = {}, options) => {
     },
     resolveLoader,
   };
-};
+}
 
-const webpackFinal = (webpackConfig = {}, options) => {
+function webpackFinal(
+  webpackConfig: Configuration = {},
+  _options: PluginOptions
+) {
   logger.info(`=> Removing storybook default rules.`);
 
   // these are suppressed by storybook when @storybook/preset-create-react-app is present.
-  const rules = webpackConfig.module.rules.filter(
+  const rules = webpackConfig.module?.rules?.filter(
     (rule) =>
       !(
+        rule &&
+        rule !== "..." &&
         rule.test instanceof RegExp &&
         (rule.test.test(".css") ||
           rule.test.test(".svg") ||
@@ -150,9 +157,12 @@ const webpackFinal = (webpackConfig = {}, options) => {
       rules: rules,
     },
   };
-};
+}
 
-const managerWebpack = (webpackConfig = {}, options) => {
+function managerWebpack(
+  webpackConfig: Configuration = {},
+  options: PluginOptions
+) {
   const cracoConfigFile =
     options.cracoConfigFile || resolve(CWD, "craco.config.js");
 
@@ -172,11 +182,6 @@ const managerWebpack = (webpackConfig = {}, options) => {
     ...webpackConfig,
     resolveLoader,
   };
-};
+}
 
-module.exports = {
-  babelDefault,
-  webpack,
-  webpackFinal,
-  managerWebpack,
-};
+export { babelDefault, webpack, webpackFinal, managerWebpack };
