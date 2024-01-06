@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/YanZisuka/storybook-preset-craco/compare/v1.0.1...v1.0.2) (2024-01-06)
+
+
+### Bug Fixes
+
+* publish to npm registry ([dbe8f71](https://github.com/YanZisuka/storybook-preset-craco/commit/dbe8f71f1581ecaa0bae3030a05e4a5b206c9b50))
+
 ## [1.0.1](https://github.com/YanZisuka/storybook-preset-craco/compare/v1.0.0...v1.0.1) (2024-01-06)
 
 
