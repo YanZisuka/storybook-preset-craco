@@ -1,6 +1,6 @@
 {
   "name": "@yanzisuka/storybook-preset-craco",
-  "version": "7.0.0",
+  "version": "1.0.0",
   "packageManager": "yarn@4.0.2",
   "description": "One-line CRACO configuration for Storybook",
   "homepage": "https://github.com/YanZisuka/storybook-preset-craco",
