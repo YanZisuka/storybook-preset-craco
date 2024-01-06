@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/YanZisuka/storybook-preset-craco/compare/v1.0.0...v1.0.1) (2024-01-06)
+
+
+### Bug Fixes
+
+* releaserc ([ae3f877](https://github.com/YanZisuka/storybook-preset-craco/commit/ae3f877dcc9e38ccf6daac8bce10c30877170a04))
+
 # 1.0.0 (2024-01-06)
 
 
