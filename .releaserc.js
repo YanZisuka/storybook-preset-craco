@@ -10,10 +10,7 @@ module.exports = {
       },
     ],
     '@semantic-release/npm',
-    [
-      '@semantic-release/github',
-      { assets: ['dist/**', 'LICENSE', 'README.md', 'package.json'] },
-    ],
+    '@semantic-release/github',
     [
       '@semantic-release/git',
       {
